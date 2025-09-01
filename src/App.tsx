@@ -72,9 +72,27 @@ export default function App() {
         }
       }
     }
-   
   };
 
+  const filteredProps = [
+    {
+      header: "IP Address",
+      value: data?.ip
+    },
+    {
+      header: "Location",
+      value: `${data?.location.city}, ${data?.location.region}`
+    },
+    {
+      header: "Timezone",
+      value: data?.location.timezone
+    },
+    {
+      header: "ISP",
+      value: data?.isp
+    }
+  ];
+ 
   return (
     <div className="w-[100vw] h-[100vh]">
       <div className="relative h-[35vh] text-center min-h-[180px] max-h-[320px]">
@@ -82,8 +100,8 @@ export default function App() {
           src={isMobile ? "/pattern-bg-mobile.png" : "/pattern-bg-desktop.png"}
           className="w-full h-full -z-1 absolute object-cover"
         />
-        <div className="p-4">
-          <h1 className="text-white text-xl md:text-3xl mb-4 md:mb-5 font-bold">IP Address Tracker
+        <div className="p-5">
+          <h1 className="text-white text-2xl md:text-3xl mb-4 md:mb-7 font-bold">IP Address Tracker
           </h1>
           <div className="flex justify-center h-10">
             <input
@@ -100,24 +118,32 @@ export default function App() {
           </div>
         </div>
       </div>
-      <div className={data ? `w-[calc(60vw+40px)] md:w-[calc(70vw+40px)] max-w-[1100px] py-6 bg-white absolute left-1/2 -translate-x-1/2 z-20 top-30 md:top-40 rounded-lg shadow-2xl p-3 flex flex-col items-center md:flex-row justify-center font-bold space-y-2 md:space-y-0 md:justify-evenly` : "hidden"}>
-        {data?.ip && <div className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3 ${isMobile ? "border-b-1" : "border-r-1"}`}>
-          <h1 className="text-gray-400 text-xs">IP ADDRESS</h1>
-          <p>{data?.ip}</p>
-        </div>}
-        {data?.location.city && <div className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3 ${isMobile ? "border-b-1" : "border-r-1"}`}>
-          <h1 className="text-gray-400 text-xs">LOCATION</h1>
-          <p>{`${data?.location.city}, ${data?.location.region}`}</p>
-        </div>}
-        {data?.location.timezone && <div className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3 ${isMobile ? "border-b-1" : "border-r-1"}`}>
-          <h1 className="text-gray-400 text-xs">TIMEZONE</h1>
-          <p>{data?.location.timezone}</p>
-        </div>}
-        {data?.isp && <div className="flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3">
-          <h1 className="text-gray-400 text-xs">ISP</h1>
-          <p>{data?.isp}</p>
-        </div>}
+      <div className={data ? `w-[calc(60vw+40px)] md:w-[calc(80vw+40px)] max-w-[1100px] py-6 bg-white absolute left-1/2 -translate-x-1/2 z-20 top-35 md:top-50 rounded-lg shadow-2xl p-3 flex flex-col items-center md:flex-row justify-center font-bold space-y-2 md:space-y-0 md:justify-evenly text-lg md:text-md lg:text-xl` : "hidden"}>
+
+        {
+          filteredProps.map((prop, index) => {
+            let isLastProp = false;
+            if (index === filteredProps.length - 1) {
+              isLastProp = true;
+            }
+
+            return (
+              <div className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3 
+              ${
+                isLastProp ? 
+                  "border-0" :
+                  isMobile ? 
+                    "border-b" : 
+                    "border-r"}`}>
+                <h1 className="text-gray-400 text-xs">{prop.header.toUpperCase()}</h1>
+                <p>{prop?.value}</p>
+              </div>
+            )
+          })
+        }
       </div>
+
+      
 
       <MapContainer center={[location.lat, location.lng] as [number, number]} zoom={13} className="h-[70vh] w-[100%] z-0">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
