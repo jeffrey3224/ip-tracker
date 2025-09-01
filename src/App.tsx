@@ -41,7 +41,7 @@ export default function App() {
   useEffect(() => {
     console.log(`is mobile: ${isMobile}`);
     const handleResize = () => {
-      if (window.innerWidth >= 720)
+      if (window.innerWidth >= 768)
       setIsMobile(false);
 
       else setIsMobile(true);
@@ -54,23 +54,26 @@ export default function App() {
     };
   }, [isMobile])
 
-  const handleFetch = async (inputValue: string) => {
-    if (!inputValue) {
-      alert("Invalid Input");
-    } else {
-      try {
-        const res = await fetch(
-          `${apiKey}Address=${inputValue}&domain=${inputValue}`
-        );
-        const json: APIResponse = await res.json();
-        setData(json);
-        setLocation({ lat: json.location.lat, lng: json.location.lng });
-      } catch (error) {
-        console.log(error);
+  const handleFetch = async (inputValue: string, e?: React.KeyboardEvent<HTMLInputElement> | null) => 
+  {
+    if (e && e.key === "Enter") {
+      if (!inputValue) {
+        alert("Invalid Input");
+      } else {
+        try {
+          const res = await fetch(
+            `${apiKey}Address=${inputValue}&domain=${inputValue}`
+          );
+          const json: APIResponse = await res.json();
+          setData(json);
+          setLocation({ lat: json.location.lat, lng: json.location.lng });
+        } catch (error) {
+          console.log(error);
+        }
       }
     }
+   
   };
-
 
   return (
     <div className="w-[100vw] h-[100vh]">
@@ -79,8 +82,8 @@ export default function App() {
           src={isMobile ? "/pattern-bg-mobile.png" : "/pattern-bg-desktop.png"}
           className="w-full h-full -z-1 absolute object-cover"
         />
-        <div className="p-3">
-          <h1 className="text-white text-xl mb-4 font-bold">IP Address   Tracker
+        <div className="p-4">
+          <h1 className="text-white text-xl md:text-3xl mb-4 md:mb-5 font-bold">IP Address Tracker
           </h1>
           <div className="flex justify-center h-10">
             <input
@@ -88,32 +91,32 @@ export default function App() {
               value={inputValue}
               onChange={handleInput}
               placeholder="Search for any IP address"
-              className="w-[70vw] p-2 bg-white rounded-l-lg text-sm"
+              className="w-[70vw] max-w-[500px] p-2 bg-white rounded-l-lg text-sm"
+              onKeyDown={(e) => handleFetch(inputValue, e)}
             />
-            <button onClick={() => handleFetch(inputValue)} className="rounded-r-lg bg-black w-10 flex justify-center p-3">
+            <button onClick={() => handleFetch(inputValue, null)} className="rounded-r-lg bg-black w-10 flex justify-center p-3">
               <img src="icon-arrow.svg"/>
             </button>
           </div>
         </div>
       </div>
-      <div className={data ? `w-[calc(60vw+40px)] h-55 bg-white absolute left-1/2 -translate-x-1/2 z-20 top-30 rounded-lg shadow-2xl p-2 flex flex-col items-center justify-center font-bold space-y-2` : "hidden"}>
-        <div className="flex flex-col items-center justify-center">
+      <div className={data ? `w-[calc(60vw+40px)] md:w-[calc(70vw+40px)] max-w-[1100px] py-6 bg-white absolute left-1/2 -translate-x-1/2 z-20 top-30 md:top-40 rounded-lg shadow-2xl p-3 flex flex-col items-center md:flex-row justify-center font-bold space-y-2 md:space-y-0 md:justify-evenly` : "hidden"}>
+        {data?.ip && <div className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3 ${isMobile ? "border-b-1" : "border-r-1"}`}>
           <h1 className="text-gray-400 text-xs">IP ADDRESS</h1>
           <p>{data?.ip}</p>
-        </div>
-        <div className="flex flex-col items-center justify-center">
+        </div>}
+        {data?.location.city && <div className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3 ${isMobile ? "border-b-1" : "border-r-1"}`}>
           <h1 className="text-gray-400 text-xs">LOCATION</h1>
           <p>{`${data?.location.city}, ${data?.location.region}`}</p>
-        </div>
-        <div className="flex flex-col items-center justify-center">
+        </div>}
+        {data?.location.timezone && <div className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3 ${isMobile ? "border-b-1" : "border-r-1"}`}>
           <h1 className="text-gray-400 text-xs">TIMEZONE</h1>
           <p>{data?.location.timezone}</p>
-        </div>
-        <div className="flex flex-col items-center justify-center">
+        </div>}
+        {data?.isp && <div className="flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3">
           <h1 className="text-gray-400 text-xs">ISP</h1>
           <p>{data?.isp}</p>
-        </div>
-       
+        </div>}
       </div>
 
       <MapContainer center={[location.lat, location.lng] as [number, number]} zoom={13} className="h-[70vh] w-[100%] z-0">
