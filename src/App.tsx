@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import MapUpdater from "./MapUpdater";
+import L from "leaflet";
 
 
 type APIResponse = {
@@ -37,6 +38,16 @@ export default function App() {
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
+
+  const locationIcon = new L.Icon({
+    iconUrl: "/marker-icon.png",
+    iconRetinaUrl: "/marker-icon-2x.png",
+    shadowUrl: "/marker-shadow.png",
+    iconSize: [25, 41], 
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  })
 
   useEffect(() => {
     console.log(`is mobile: ${isMobile}`);
@@ -147,10 +158,10 @@ export default function App() {
           })
         }
       </div>
-      
+
       <MapContainer center={[location.lat, location.lng] as [number, number]} zoom={13} className="h-[70vh] w-[100%] z-0">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
-        <Marker position={[location.lat, location.lng]}>
+        <Marker position={[location.lat, location.lng]} icon={locationIcon}>
           <Popup>
             {data ? `${data.location.city}, ${data.location.country}` : "No data"}
           </Popup>
