@@ -48,31 +48,36 @@ export default function App() {
     };
 
     window.addEventListener('resize', handleResize);
+    window.addEventListener('load', handleResize)
 
     return () => {
       window.removeEventListener('resize', handleResize);
     };
   }, [isMobile])
 
-  const handleFetch = async (inputValue: string, e?: React.KeyboardEvent<HTMLInputElement> | null) => 
+  const handleFetch = async (inputValue: string | null) => 
   {
-    if (e && e.key === "Enter") {
-      if (!inputValue) {
-        alert("Invalid Input");
-      } else {
-        try {
-          const res = await fetch(
-            `${apiKey}Address=${inputValue}&domain=${inputValue}`
-          );
-          const json: APIResponse = await res.json();
-          setData(json);
-          setLocation({ lat: json.location.lat, lng: json.location.lng });
-        } catch (error) {
-          console.log(error);
-        }
+    if (!inputValue) {
+      alert("Invalid Input");
+    } else {
+      try {
+        const res = await fetch(
+          `${apiKey}Address=${inputValue}&domain=${inputValue}`
+        );
+        const json: APIResponse = await res.json();
+        setData(json);
+        setLocation({ lat: json.location.lat, lng: json.location.lng });
+      } catch (error) {
+        console.log(error);
       }
     }
   };
+
+  const handleKeyDown = (e?: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e && e.key === "Enter") {
+      handleFetch(inputValue)
+    }
+  }
 
   const filteredProps = [
     {
@@ -94,7 +99,7 @@ export default function App() {
   ];
  
   return (
-    <div className="w-[100vw] h-[100vh]">
+    <main className="w-[100vw] h-[100vh]">
       <div className="relative h-[35vh] text-center min-h-[180px] max-h-[320px]">
         <img 
           src={isMobile ? "/pattern-bg-mobile.png" : "/pattern-bg-desktop.png"}
@@ -110,9 +115,9 @@ export default function App() {
               onChange={handleInput}
               placeholder="Search for any IP address"
               className="w-[70vw] max-w-[500px] p-2 bg-white rounded-l-lg text-sm"
-              onKeyDown={(e) => handleFetch(inputValue, e)}
+              onKeyDown={(e) => handleKeyDown(e)}
             />
-            <button onClick={() => handleFetch(inputValue, null)} className="rounded-r-lg bg-black w-10 flex justify-center p-3">
+            <button onClick={() => handleFetch(inputValue)} className="rounded-r-lg bg-black w-10 flex justify-center p-3 cursor-pointer">
               <img src="icon-arrow.svg"/>
             </button>
           </div>
@@ -136,15 +141,13 @@ export default function App() {
                     "border-b" : 
                     "border-r"}`}>
                 <h1 className="text-gray-400 text-xs">{prop.header.toUpperCase()}</h1>
-                <p>{prop?.value}</p>
+                <p className="text-center md:text-left">{prop?.value ? prop?.value : "No data to display"}</p>
               </div>
             )
           })
         }
       </div>
-
       
-
       <MapContainer center={[location.lat, location.lng] as [number, number]} zoom={13} className="h-[70vh] w-[100%] z-0">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
         <Marker position={[location.lat, location.lng]}>
@@ -154,6 +157,6 @@ export default function App() {
         </Marker>
         <MapUpdater lat={location.lat} lng={location.lng}/>
       </MapContainer>
-    </div>
+    </main>
   );
 }
