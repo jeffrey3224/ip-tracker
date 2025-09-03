@@ -35,7 +35,7 @@ Users should be able to:
 ### Links
 
 - Solution URL: [Add solution URL here](https://www.frontendmentor.io/profile/jeffrey3224)
-- Live Site URL: [Add live site URL here](https://jeffreygirard.dev/portfolio/ip-tracker)
+- Live Site URL: [Add live site URL here](https://ip-tracker-lovat-sigma.vercel.app/)
 
 ### My Process 
 

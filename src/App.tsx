@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import MapUpdater from "./MapUpdater";
 import L from "leaflet";
+import { ClipLoader } from "react-spinners";
 
 
 type APIResponse = {
@@ -13,27 +14,33 @@ type APIResponse = {
     city: string;
     lat: number;
     lng: number;
-    timezone: number;
+    timezone: number | string;
   };
   domains: string;
-  as: {
-    asn: number;
-    name: string;
-    route: string;
-    domain: string;
-    type: string;
-  };
   isp: string;
 };
 
 export default function App() {
   const [inputValue, setInputValue] = useState("");
-  const [data, setData] = useState<APIResponse | null>(null);
+  const [data, setData] = useState<APIResponse>({
+    ip: "",
+    location: {
+      lat: 0,
+      lng: 0,
+      city: "",
+      country: "",
+      region: "",
+      timezone: 0
+    },
+    domains: "",
+    isp: ""
+  });
   const [location, setLocation] = useState({ lat: 51.505, lng: -0.09 });
 
   const apiKey = import.meta.env.VITE_API_KEY;
 
   const [isMobile, setIsMobile] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -49,25 +56,58 @@ export default function App() {
     shadowSize: [41, 41]
   })
 
-  useEffect(() => {
-    console.log(`is mobile: ${isMobile}`);
-    const handleResize = () => {
-      if (window.innerWidth >= 768)
-      setIsMobile(false);
 
-      else setIsMobile(true);
+ const getUserData = async () => {
+  try {
+    const res = await fetch("http://ip-api.com/json/");
+    const data = await res.json();
+    const timeZoneOffset = new Date().getTimezoneOffset() / -60
+    const tzString = `${timeZoneOffset >= 0 ? "+" : "-"}${Math.abs(timeZoneOffset).toString().padStart(2, "0")}:00`;
+
+    if (data) {
+      setData({
+        ip: data.query,
+        location: {
+          lat: data.lat,
+          lng: data.lon,
+          city: data.city,
+          country: data.country_name,
+          region: data.regionName,
+          timezone: tzString,
+        },
+        domains: "",
+        isp: data.isp
+      })
+      setLocation({lat: data.lat, lng: data.lon})
+      setLoading(false);
+      console.log(data)
+    }
+  }
+  catch (error) {
+    console.log(error)
+  }
+ }
+
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('load', handleResize)
+    handleResize();
+    getUserData();
+
+    window.addEventListener('resize', handleResize)
 
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [isMobile])
+  }, []);
+
 
   const handleFetch = async (inputValue: string | null) => 
   {
+    setLoading(true)
     if (!inputValue) {
       alert("Invalid Input");
     } else {
@@ -82,6 +122,7 @@ export default function App() {
         console.log(error);
       }
     }
+    setLoading(false);
   };
 
   const handleKeyDown = (e?: React.KeyboardEvent<HTMLInputElement>) => {
@@ -124,19 +165,24 @@ export default function App() {
               type="text"
               value={inputValue}
               onChange={handleInput}
-              placeholder="Search for any IP address"
-              className="w-[70vw] max-w-[500px] p-2 bg-white rounded-l-lg text-sm"
+              placeholder="Search for any IP address or domain"
+              className="w-[70vw] max-w-[500px] p-2 bg-white rounded-l-lg text-[12px] sm:text-base h-11"
               onKeyDown={(e) => handleKeyDown(e)}
             />
-            <button onClick={() => handleFetch(inputValue)} className="rounded-r-lg bg-black w-10 flex justify-center p-3 cursor-pointer">
+            <button onClick={() => handleFetch(inputValue)} className="rounded-r-lg bg-black w-10 flex justify-center p-3 cursor-pointer h-11">
               <img src="icon-arrow.svg"/>
             </button>
           </div>
         </div>
       </div>
-      <div className={data ? `w-[calc(60vw+40px)] md:w-[calc(80vw+40px)] max-w-[1100px] py-6 bg-white absolute left-1/2 -translate-x-1/2 z-20 top-35 md:top-50 rounded-lg shadow-2xl p-3 flex flex-col items-center md:flex-row justify-center font-bold space-y-2 md:space-y-0 md:justify-evenly text-lg md:text-md lg:text-xl` : "hidden"}>
+      <div className={`w-[calc(60vw+40px)] md:w-[calc(85vw+25px)] max-w-[1100px] py-6 bg-white absolute left-1/2 -translate-x-1/2 z-20 top-35 md:top-50 rounded-lg shadow-2xl p-3 flex flex-col items-center md:flex-row justify-center font-bold space-y-2 md:space-y-0 md:justify-evenly text-xl md:text-[18px] lg:text-2xl`}>
 
-        {
+        {loading ? 
+          <div className="w-[60vw] h-40 bg-white flex
+          items-center justify-center">
+           <ClipLoader color="#00008B" size={50} />
+          </div>
+        : 
           filteredProps.map((prop, index) => {
             let isLastProp = false;
             if (index === filteredProps.length - 1) {
@@ -144,15 +190,15 @@ export default function App() {
             }
 
             return (
-              <div className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[70px] md:justify-start border-gray-400 md:px-3 
+              <div key={index} className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[90px] lg:h-[100px] md:justify-start border-gray-400 md:px-3
               ${
                 isLastProp ? 
                   "border-0" :
                   isMobile ? 
-                    "border-b" : 
+                    "border-0" : 
                     "border-r"}`}>
                 <h1 className="text-gray-400 text-xs">{prop.header.toUpperCase()}</h1>
-                <p className="text-center md:text-left">{prop?.value ? prop?.value : "No data to display"}</p>
+                <p className="text-center md:text-left leading-tight">{prop?.value ? prop?.value : "No data"}</p>
               </div>
             )
           })
