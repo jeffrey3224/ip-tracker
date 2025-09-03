@@ -58,39 +58,38 @@ export default function App() {
 
 
  const getUserData = async () => {
+  setLoading(true);
   try {
-    const res = await fetch("http://ip-api.com/json/");
+    const res = await fetch("https://ipapi.co/json/");
     const data = await res.json();
     const timeZoneOffset = new Date().getTimezoneOffset() / -60
     const tzString = `${timeZoneOffset >= 0 ? "+" : "-"}${Math.abs(timeZoneOffset).toString().padStart(2, "0")}:00`;
 
-    if (data) {
+    if (data && data.latitude && data.longitude) {
       setData({
-        ip: data.query,
+        ip: data.ip,
         location: {
-          lat: data.lat,
-          lng: data.lon,
+          lat: data.latitude,
+          lng: data.longitude,
           city: data.city,
-          country: data.country_name,
-          region: data.regionName,
+          country: data.country,
+          region: data.region,
           timezone: tzString,
         },
         domains: "",
-        isp: data.isp
+        isp: data.org
       })
-      setLocation({lat: data.lat, lng: data.lon})
-      setLoading(false);
+      setLocation({lat: data.latitude, lng: data.longitude})
       console.log(data)
     }
   }
   catch (error) {
     console.log(error)
   }
+  finally {
+    setLoading(false);
+  }
  }
-
- useEffect(() => {
-  getUserData();
- }, [])
 
   useEffect(() => {
     const handleResize = () => {
