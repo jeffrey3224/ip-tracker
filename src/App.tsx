@@ -88,6 +88,9 @@ export default function App() {
   }
  }
 
+ useEffect(() => {
+  getUserData();
+ }, [])
 
   useEffect(() => {
     const handleResize = () => {
