@@ -40,6 +40,7 @@ export default function App() {
   const apiKey = import.meta.env.VITE_API_KEY;
 
   const [isMobile, setIsMobile] = useState(true);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,6 +95,7 @@ export default function App() {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
+      setIsLargeScreen(window.innerWidth < 1024);
     };
 
     handleResize();
@@ -177,45 +179,52 @@ export default function App() {
           </div>
         </div>
       </div>
-      <div className={`w-[calc(60vw+40px)] md:w-[calc(85vw+25px)] max-w-[1100px] py-6 bg-white absolute left-1/2 -translate-x-1/2 z-20 top-35 md:top-50 rounded-lg shadow-2xl p-3 flex flex-col items-center md:flex-row justify-center font-bold space-y-2 md:space-y-0 md:justify-evenly text-xl md:text-[18px] lg:text-2xl`}>
+      <div className={`w-[calc(60vw+40px)] lg:w-[calc(70vw+20px)] max-w-[1100px] py-6 bg-white absolute left-1/2 -translate-x-1/2 z-20 top-45 lg:top-60 rounded-lg shadow-2xl p-3 flex flex-col items-center lg:flex-row justify-center font-bold space-y-2 lg:space-y-0 md:justify-evenly text-xl xl:text-2xl`}>
 
-        {loading ? 
-          <div className="w-[60vw] h-40 bg-white flex
-          items-center justify-center">
-           <ClipLoader color="#00008B" size={50} />
-          </div>
-        : 
-          filteredProps.map((prop, index) => {
-            let isLastProp = false;
-            if (index === filteredProps.length - 1) {
-              isLastProp = true;
-            }
-
-            return (
-              <div key={index} className={`flex flex-col items-center justify-center w-1/2 md:min-w-[132px] md:w-1/4 md:items-start md:h-[90px] lg:h-[100px] md:justify-start border-gray-400 md:px-3
-              ${
-                isLastProp ? 
-                  "border-0" :
-                  isMobile ? 
-                    "border-0" : 
-                    "border-r"}`}>
-                <h1 className="text-gray-400 text-xs">{prop.header.toUpperCase()}</h1>
-                <p className="text-center md:text-left leading-tight">{prop?.value ? prop?.value : "No data"}</p>
+            {loading ? 
+              <div className="w-[60vw] h-40 bg-white flex
+              items-center justify-center">
+              <ClipLoader color="#00008B" size={50} />
               </div>
-            )
-          })
-        }
-      </div>
+            : 
+              filteredProps.map((prop, index) => {
+                let isLastProp = false;
+                if (index === filteredProps.length - 1) {
+                  isLastProp = true;
+                }
 
-      <MapContainer center={[location.lat, location.lng] as [number, number]} zoom={13} className="h-[70vh] w-[100%] z-0">
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
-        <Marker position={[location.lat, location.lng]} icon={locationIcon}>
-          <Popup>
-            {data ? `${data.location.city}, ${data.location.country}` : "No data"}
-          </Popup>
-        </Marker>
-        <MapUpdater lat={location.lat} lng={location.lng}/>
-      </MapContainer>
+                return (
+                  <div key={index} className={`z-10 flex flex-col items-center justify-center w-2/3 md:min-w-[120px] lg:w-1/4 lg:items-start lg:h-[75px] xl:h-[80px] xl:h-[100px] lg:justify-start border-gray-400 lg:px-3
+                  ${
+                    isLastProp ? 
+                      "border-0" :
+                      isLargeScreen ? 
+                        "border-0" : 
+                        "border-r"}`}>
+                    <h1 className="text-gray-400 text-xs">{prop.header.toUpperCase()}</h1>
+                    <p className="text-center lg:text-left leading-tight text-wrap">{prop?.value ? prop?.value : "No data"}</p>
+                  </div>
+                )
+              })
+            }
+          </div>
+
+          <div className="relative w-full">
+            {location  ? 
+             ( <MapContainer center={[location.lat, location.lng] as [number, number]} zoom={13} className="h-[70vh] w-full z-0">
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
+              <Marker position={[location.lat, location.lng]} icon={locationIcon}>
+                <Popup>
+                  {data ? `${data.location.city}, ${data.location.country}` : "No data"}
+                </Popup>
+              </Marker>
+              <MapUpdater lat={location.lat} lng={location.lng}/>
+            </MapContainer> ) : (
+              <div className="w-full h-[60vh] flex items-center justify-center">
+            <ClipLoader color="#00008B" size={50} />
+          </div>)
+            }
+          </div>
     </main>
   );
 }
